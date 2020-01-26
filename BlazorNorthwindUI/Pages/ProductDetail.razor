@@ -1,0 +1,68 @@
+﻿@page "/productdetail/{productId:int}"
+@using BlazorNorthwindUI.Services
+@using BlazorNorthwindUI.Models
+@using BlazorNorthwindUI.Utilities
+@inject IProductService ProductService
+@inject ICategoryService CategoryService
+@inject NavigationManager  NavigationManager
+
+@if (productViewModel != null)
+{
+    <h3>ProductDetail for @productViewModel.ProductName</h3>
+    <EditForm Model="@productViewModel" OnValidSubmit="@HandleSave" >
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <InputText PlaceHolder="Ürün Adı" Class="form-control" @bind-Value="@productViewModel.ProductName" Id="productName" />
+            <ValidationMessage For="@(()=>productViewModel.ProductName)" />
+        </div>
+        <div class="form-group">
+            <InputNumber PlaceHolder="Ürün Fiyatı" Class="form-control" @bind-Value="@productViewModel.UnitPrice" Id="unitPrice" />
+
+        </div>
+        <div class="form-group">
+            <InputTextArea PlaceHolder="Açıklama" Class="form-control" @bind-Value="@productViewModel.QuantityPerUnit" Id="quantityPerUnit" />
+        </div>
+        <div class="form-group">
+            <InputNumber PlaceHolder="Stok Adedi" Class="form-control" @bind-Value="@productViewModel.UnitsInStock" Id="unitsInStock" />
+        </div>
+        <div class="form-group">
+            @if (categories != null)
+            {
+                <InputSelectNumber Class="form-control" Id="categoryId" @bind-Value="@productViewModel.CategoryId">
+                    @foreach (var category in categories)
+                    {
+                        <option value=@category.CategoryId>@category.CategoryName</option>
+                    }
+                    
+                </InputSelectNumber>
+            }
+
+            <ValidationMessage For="@(()=>productViewModel.CategoryId)" />
+        </div>
+
+            <button class="btn btn-primary" type="submit">Kaydet</button>
+        
+        
+
+    </EditForm>
+}
+
+
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+
+    ProductViewModel productViewModel;
+    Category[] categories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productViewModel = await ProductService.GetProductById(ProductId);
+        categories = await CategoryService.GetCategories();
+    }
+    private void HandleSave()
+    {
+        ProductService.Save(productViewModel);
+    }
+}
